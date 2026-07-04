@@ -1,0 +1,9 @@
+[importlinter]
+root_package = {{ package_name }}
+
+[importlinter:contract:layers]
+name = cli may import domain, never the reverse
+type = layers
+layers =
+    {{ package_name }}.cli
+    {{ package_name }}.domain

@@ -1,0 +1,19 @@
+"""Outer layer: command-line entry point over the domain."""
+
+from __future__ import annotations
+
+import sys
+
+from {{ package_name }}.domain.greeter import Greeter
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Greet the name given as the first argument, defaulting to "world"."""
+    args = sys.argv[1:] if argv is None else argv
+    name = args[0] if args else "world"
+    print(Greeter().greet(name))
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover — exercised only as a script
+    raise SystemExit(main())

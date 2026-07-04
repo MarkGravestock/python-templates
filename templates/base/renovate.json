@@ -1,0 +1,9 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": "Keeps pyproject.toml, uv.lock, and GitHub Actions current. Activate by installing the Renovate GitHub App on this repository; every update PR must pass the gauntlet.",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  }
+}

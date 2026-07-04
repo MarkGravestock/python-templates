@@ -1,0 +1,31 @@
+# CI for when this template is the root of its own repository.
+# (Inside the claude-playground monorepo this file is inert — the root
+# workflow .github/workflows/template-gauntlet.yml runs the gauntlet instead.)
+name: check
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly: surface new dependency advisories without a code change
+
+jobs:
+  gauntlet:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --dev
+      - run: uv run poe check
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --dev
+      - run: uv run poe audit

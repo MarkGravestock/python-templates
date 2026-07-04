@@ -1,0 +1,19 @@
+"""Tests for the CLI entry point."""
+
+from __future__ import annotations
+
+from {{ package_name }}.cli.main import main
+
+
+def test_greets_the_named_argument(capsys):
+    exit_code = main(["Ada"])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == "Hello, Ada!\n"
+
+
+def test_defaults_to_world(capsys):
+    exit_code = main([])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == "Hello, world!\n"

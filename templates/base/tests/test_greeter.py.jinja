@@ -1,0 +1,24 @@
+"""Tests for the Greeter domain class."""
+
+from __future__ import annotations
+
+import pytest
+
+from {{ package_name }}.domain.greeter import Greeter
+
+
+def test_greets_by_name():
+    assert Greeter().greet("Ada") == "Hello, Ada!"
+
+
+def test_salutation_is_configurable():
+    assert Greeter(salutation="Hi").greet("Ada") == "Hi, Ada!"
+
+
+def test_strips_surrounding_whitespace():
+    assert Greeter().greet("  Ada \n") == "Hello, Ada!"
+
+
+def test_blank_name_is_rejected():
+    with pytest.raises(ValueError, match="must not be blank"):
+        Greeter().greet("   ")

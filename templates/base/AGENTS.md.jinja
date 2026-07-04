@@ -1,0 +1,44 @@
+# AGENTS.md
+
+## Mandatory: Run `uv run poe check` Before Declaring Work Complete
+
+**Work is not complete until `uv run poe check` passes.** Do not summarise or stop without running it.
+
+    uv run poe check   # lint → format → types → imports → complexity → tests
+
+    uv run poe fix     # auto-fix lint and format issues
+
+**Rules:**
+
+- Never suppress errors with `# type: ignore` or `# noqa` without an inline reason.
+- Complexity gate: grade C ceiling. Split any D/E/F block into named helpers.
+- Coverage floor is a tripwire, not a target. Do not write tests solely to move the number.
+- Track the latest stable Python (see `requires-python`). `requires-python`, ruff `target-version`, and pyright `pythonVersion` move together — never update one alone.
+- Dependency updates arrive as Renovate PRs and are gated by the gauntlet. If you add or bump a dependency yourself, also run `uv run poe audit` (pip-audit; deliberately outside `poe check` because new advisories are not the committer's fault).
+
+### Pre-commit hook
+
+    uv run poe hooks   # once per clone
+
+Do NOT run `uv run pre-commit install` — the pre-commit framework is not used here. The hook is the plain sh script in `.githooks/`, activated by pointing `core.hooksPath` at that directory.
+
+### Keep docs in sync
+
+| Artefact   | Update when…                                                          |
+| ---------- | --------------------------------------------------------------------- |
+| AGENTS.md  | Architecture, contracts, CLI interface, or testing approach changes    |
+| Docstrings | Behaviour, parameters, or side effects of any `src/` function change   |
+| README.md  | User-facing CLI usage or workflow changes                               |
+
+---
+
+## Architecture
+
+**Ports-and-adapters** (hexagonal): the domain sits in the centre and depends on nothing outside itself. Outer layers (`{{ package_name }}.cli`) import the domain, never the reverse. import-linter enforces this (`uv run poe imports`, contract in `importlinter.ini`) — when you add a package, add it to the layers contract.
+
+## Layout
+
+    src/{{ package_name }}/domain/   # pure logic, no I/O, no outward imports
+    src/{{ package_name }}/cli/      # entry points driving the domain
+    tests/                         # pytest; mirrors src/ structure
+    scripts/                       # dev tooling (complexity gate, hook installer)

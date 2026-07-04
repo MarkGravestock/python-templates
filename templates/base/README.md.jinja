@@ -1,0 +1,85 @@
+# {{ project_name }}
+
+A Python project with a full quality gauntlet wired in, designed for
+agent-driven development. Generated from
+[python-templates](https://github.com/MarkGravestock/python-templates).
+
+## Why
+
+An agent will sometimes hallucinate an API, skip a test, lower the bar, or
+declare work finished when it isn't. Reviewing harder doesn't scale;
+deterministic checks do. Every gate in this project either passes or fails,
+and prints output the agent can read and act on.
+
+The same command, `uv run poe check`, is enforced at three points:
+
+1. **While working.** AGENTS.md tells the agent work is not complete until
+   the gauntlet passes, so it verifies and fixes its own findings before
+   handing over.
+2. **At commit.** The pre-commit hook runs the gauntlet, so unverified work
+   cannot enter history even if the agent skipped step 1.
+3. **In CI.** GitHub Actions re-runs it on Ubuntu and Windows.
+
+Each gate catches a specific failure: ruff stops style drift, pyright stops
+wrong types, import-linter stops the domain importing an adapter, radon fails
+any function past grade C, and the coverage floor catches deleted tests.
+Because the gates are deterministic, "done" means the same thing to the
+agent, the hook, and CI.
+
+## Quick start
+
+```
+uv run poe setup    # install dependencies
+uv run poe check    # run the full gauntlet
+uv run poe hooks    # install the pre-commit hook
+```
+
+## The gauntlet
+
+| Task                    | What it does                                            |
+| ----------------------- | ------------------------------------------------------- |
+| `uv run poe check`      | Full gauntlet: lint → format → types → imports → complexity → tests |
+| `uv run poe fix`        | Auto-fix lint and format issues                         |
+| `uv run poe lint`       | ruff check, including flake8-bandit security rules      |
+| `uv run poe format`     | ruff format --check                                     |
+| `uv run poe typecheck`  | pyright (standard mode)                                 |
+| `uv run poe imports`    | import-linter architectural boundaries                  |
+| `uv run poe complexity` | radon cyclomatic complexity, fails on D/E/F grades      |
+| `uv run poe test`       | pytest, quick, no coverage                              |
+| `uv run poe test-ci`    | pytest + coverage floor + XML reports into `build/`     |
+| `uv run poe audit`      | pip-audit: dependencies vs known-vulnerability databases |
+
+## Staying current
+
+- **Python**: track the latest stable release. `requires-python`, ruff's
+  `target-version`, and pyright's `pythonVersion` move together; update all
+  three at once.
+- **Dependencies**: install the
+  [Renovate GitHub App](https://github.com/apps/renovate) on this repository
+  to activate `renovate.json`. Each update PR must pass the gauntlet before
+  merge.
+- **Vulnerabilities**: `uv run poe audit` checks the installed environment
+  with pip-audit. CI runs it on every push and weekly on a schedule. It is
+  deliberately not part of `poe check`: a new CVE in a dependency should
+  fail CI, not block an unrelated commit.
+
+## Mix-ins
+
+Layer more structure from
+[python-templates](https://github.com/MarkGravestock/python-templates) onto
+this project later, e.g. the factory_boy/faker testing setup:
+
+```
+uvx copier copy --data template=testing gh:MarkGravestock/python-templates .
+uv add --dev factory-boy faker
+uv run poe check
+```
+
+## Layout
+
+The sample code (`Greeter` + a thin CLI) exists so every gate has real code
+to check; replace it as your project grows.
+
+```
+uv run python -m {{ package_name }}.cli.main [name]
+```

@@ -1,0 +1,37 @@
+# Multi-template repo: `template` selects which directory is rendered.
+# base scaffolds a new project; the others are mix-ins applied to an existing one.
+_subdirectory: "templates/{{ template }}"
+
+_message_after_copy: |
+  {% if template == 'base' -%}
+  Next steps:
+    git init && cd into the project (if you haven't already)
+    uv run poe setup   # install dependencies
+    uv run poe check   # run the gauntlet
+    uv run poe hooks   # install the pre-commit hook
+  Install the Renovate GitHub App on the repository to activate renovate.json.
+  {%- else -%}
+  Next steps:
+    uv add --dev factory-boy faker
+    uv run poe check
+  {%- endif %}
+
+template:
+  type: str
+  help: Which template to apply (base scaffolds a project; others mix into an existing one)
+  choices:
+    - base
+    - testing
+  default: base
+
+project_name:
+  type: str
+  help: Project name (used in pyproject.toml and the README)
+  default: my-project
+  when: "{{ template == 'base' }}"
+
+package_name:
+  type: str
+  help: Python import package name (snake_case)
+  default: "{{ project_name | lower | replace('-', '_') | replace(' ', '_') }}"
+  when: "{{ template == 'base' }}"

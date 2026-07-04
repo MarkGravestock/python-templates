@@ -1,0 +1,141 @@
+[project]
+name = "{{ project_name }}"
+version = "0.1.0"
+description = "{{ project_name }}"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.11",
+    "poethepoet>=0.29",
+    "pyright>=1.1.410",
+    "pytest>=8.3",
+    "radon>=6.0",
+    "ruff>=0.8",
+    "coverage>=7.6",
+    "pytest-cov>=6.0",
+    "pip-audit>=2.7",
+]
+
+[tool.poe.tasks.setup]
+cmd  = "uv sync --dev"
+help = "Install dependencies"
+
+[tool.poe.tasks.lint]
+cmd  = "ruff check ."
+help = "Lint only (no auto-fix)"
+
+[tool.poe.tasks.format]
+cmd  = "ruff format --check ."
+help = "Format check only"
+
+[tool.poe.tasks.typecheck]
+cmd  = "pyright"
+help = "Type check"
+
+[tool.poe.tasks.imports]
+cmd  = "lint-imports --config importlinter.ini"
+env  = { PYTHONPATH = "src" }  # src layout without installing the package
+help = "Architectural boundary checks"
+
+[tool.poe.tasks._complexity_json]
+cmd  = "python scripts/generate_complexity_json.py build/complexity.json"
+help = "Internal: dump radon JSON to file"
+
+[tool.poe.tasks.complexity]
+sequence = [{ref = "_complexity_json"}, {cmd = "python scripts/check_complexity.py build/complexity.json"}]
+help     = "Cyclomatic complexity — fails on any D/E/F grade block"
+
+[tool.poe.tasks.test]
+cmd  = "pytest -q"
+help = "Run tests (no coverage)"
+
+[tool.poe.tasks.test-ci]
+cmd  = "pytest -q --cov --cov-report=term-missing --cov-report=xml:build/coverage/coverage.xml --junit-xml=build/test-results/pytest.xml"
+help = "Run tests with coverage + JUnit XML for CI"
+
+[tool.poe.tasks.fix]
+sequence = [{cmd = "ruff check --fix ."}, {cmd = "ruff format ."}]
+help     = "Auto-fix lint and format issues"
+
+[tool.poe.tasks.audit]
+cmd  = "pip-audit"
+help = "Check installed dependencies against known-vulnerability databases (CI + on demand, not part of check)"
+
+[tool.poe.tasks.hooks]
+cmd  = "python scripts/install_hooks.py"
+help = "Point git at the versioned .githooks directory (run once per clone)"
+
+[tool.poe.tasks.check]
+sequence = [
+    {ref = "lint"},
+    {ref = "format"},
+    {ref = "typecheck"},
+    {ref = "imports"},
+    {ref = "complexity"},
+    {ref = "test-ci"},
+]
+help = "Full check gauntlet: lint, format, types, imports, complexity, tests"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests requiring external services or Docker",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "ANN", # type annotation enforcement (src/ only — see per-file-ignores)
+    "S",   # flake8-bandit security rules
+    "PT",  # pytest best practices
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "SIM108", # ternary vs if/else — style choice
+    "ANN401", # Any allowed in callback/generic signatures
+    "PT013",  # allow both import styles for pytest
+    "TCH",    # type-checking import moves — from __future__ import annotations is used throughout
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "S101"]  # annotation enforcement is for src/ only; pytest uses assert
+"scripts/**" = ["ANN", "S603", "S607"]  # dev tooling running fixed, trusted commands
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{ package_name }}"]
+
+[tool.pyright]
+pythonVersion = "3.14"
+pythonPlatform = "All"
+typeCheckingMode = "standard"
+include = ["src"]
+exclude = ["**/__pycache__", ".venv"]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["**/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 75

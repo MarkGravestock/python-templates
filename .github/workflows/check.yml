@@ -1,0 +1,52 @@
+# Proves the templates: generates a project from base, runs its full gauntlet,
+# then overlays the testing mix-in and runs it again.
+name: check
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly: surface new dependency advisories without a code change
+
+jobs:
+  base:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data project_name=proving-ground . out
+      - run: uv sync --dev
+        working-directory: out
+      - run: uv run poe check
+        working-directory: out
+
+  base-plus-testing:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data project_name=proving-ground . out
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing . out
+      - run: uv add --dev factory-boy faker
+        working-directory: out
+      - run: uv run poe check
+        working-directory: out
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data project_name=proving-ground . out
+      - run: uv sync --dev
+        working-directory: out
+      - run: uv run poe audit
+        working-directory: out
