@@ -70,10 +70,15 @@ Layer more structure from
 this project later, e.g. the factory_boy/faker testing setup:
 
 ```
-uvx copier copy --data template=testing gh:MarkGravestock/python-templates .
+uvx copier copy --data template=testing-factories gh:MarkGravestock/python-templates .
 uv add --dev factory-boy faker
 uv run poe check
 ```
+
+Available mix-ins: `testing-factories` (factory_boy/faker),
+`testing-property` (Hypothesis), `testing-mutation` (mutmut, weekly CI),
+`testing-containers` (testcontainers). Copier prints each one's remaining
+steps after copying.
 
 ## Layout
 

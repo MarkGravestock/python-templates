@@ -24,7 +24,7 @@ jobs:
       - run: uv run poe check
         working-directory: out
 
-  base-plus-testing:
+  base-plus-mixins:
     strategy:
       fail-fast: false
       matrix:
@@ -34,8 +34,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uvx copier copy --vcs-ref=HEAD --defaults --data project_name=proving-ground . out
-      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing . out
-      - run: uv add --dev factory-boy faker
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing-factories . out
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing-property . out
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing-mutation . out
+      - run: uvx copier copy --vcs-ref=HEAD --defaults --data template=testing-containers . out
+      - run: uv add --dev factory-boy faker hypothesis mutmut testcontainers redis
         working-directory: out
       - run: uv run poe check
         working-directory: out

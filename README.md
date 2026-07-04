@@ -32,24 +32,32 @@ no find-and-replace.
 From inside an existing project generated from base:
 
 ```
-uvx copier copy --data template=testing gh:MarkGravestock/python-templates .
+uvx copier copy --data template=testing-factories gh:MarkGravestock/python-templates .
 uv add --dev factory-boy faker
 uv run poe check
 ```
 
+Copier prints each mix-in's remaining steps (the `uv add`, any config) after
+copying.
+
 ## Templates
 
-| Template  | What it gives you                                                        |
-| --------- | ------------------------------------------------------------------------ |
-| `base`    | src layout with a ports-and-adapters sample, the full poe gauntlet (ruff + bandit rules, pyright, import-linter, radon complexity ceiling, pytest + coverage floor), pip-audit task, AGENTS.md/CLAUDE.md/TABNINE.md contract, cross-platform pre-commit hook, GitHub Actions CI (Ubuntu + Windows), renovate.json |
-| `testing` | factory_boy + faker test structure: `tests/factories.py` (sequences, Faker, subfactories, traits), shared conftest fixtures, and pattern-demonstrating tests |
+| Template             | What it gives you                                                        |
+| -------------------- | ------------------------------------------------------------------------ |
+| `base`               | src layout with a ports-and-adapters sample, the full poe gauntlet (ruff + bandit rules, pyright, import-linter, radon complexity ceiling, pytest + coverage floor), pip-audit task, AGENTS.md/CLAUDE.md/TABNINE.md contract, cross-platform pre-commit hook, GitHub Actions CI (Ubuntu + Windows), renovate.json |
+| `testing-factories`  | factory_boy + faker test structure: `tests/factories.py` (sequences, Faker, subfactories, traits), shared conftest fixtures, and pattern-demonstrating tests |
+| `testing-property`   | Hypothesis property-based testing: demonstration properties (invariants, round-trips, idempotence) that run inside the existing test gate |
+| `testing-mutation`   | mutmut mutation testing as a weekly/manual GitHub Actions job — audits whether the tests would catch bugs, the complement to the coverage floor |
+| `testing-containers` | testcontainers integration test against a real Redis in Docker, marked `integration` and self-skipping where Docker is absent |
+
+More candidates (HTTP stubbing, contract testing, BDD, performance) are
+parked in [TODO.md](TODO.md).
 
 ## How the templates stay proven
 
 CI in this repo generates a project from `base`, runs the full gauntlet on
-the output on Ubuntu and Windows, then overlays the `testing` mix-in and runs
-it again. A template change that would break a generated project cannot
-merge.
+the output on Ubuntu and Windows, then overlays every mix-in and runs it
+again. A template change that would break a generated project cannot merge.
 
 ## Adding a mix-in
 

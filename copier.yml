@@ -10,10 +10,28 @@ _message_after_copy: |
     uv run poe check   # run the gauntlet
     uv run poe hooks   # install the pre-commit hook
   Install the Renovate GitHub App on the repository to activate renovate.json.
-  {%- else -%}
+  {%- elif template == 'testing-factories' -%}
   Next steps:
     uv add --dev factory-boy faker
     uv run poe check
+  {%- elif template == 'testing-property' -%}
+  Next steps:
+    uv add --dev hypothesis
+    uv run poe check
+  {%- elif template == 'testing-mutation' -%}
+  Next steps:
+    uv add --dev mutmut
+    Add to pyproject.toml:
+      [tool.mutmut]
+      paths_to_mutate = ["src/"]
+      tests_dir = ["tests/"]
+    uv run poe check
+  Mutation runs weekly in CI (or on demand via workflow_dispatch); mutmut is
+  POSIX-only, so run it in Linux CI rather than locally on Windows.
+  {%- elif template == 'testing-containers' -%}
+  Next steps:
+    uv add --dev testcontainers redis
+    uv run poe check   # the example test skips automatically where Docker is absent
   {%- endif %}
 
 template:
@@ -21,7 +39,10 @@ template:
   help: Which template to apply (base scaffolds a project; others mix into an existing one)
   choices:
     - base
-    - testing
+    - testing-factories
+    - testing-property
+    - testing-mutation
+    - testing-containers
   default: base
 
 project_name:

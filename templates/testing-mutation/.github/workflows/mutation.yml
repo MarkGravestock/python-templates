@@ -1,0 +1,32 @@
+# Mutation testing: mutmut mutates src/ and checks the tests notice.
+# The complement to the coverage floor — coverage proves the tests *run* the
+# code; surviving mutants prove they wouldn't *catch a bug in* it.
+#
+# Weekly + manual because mutation runs are slow and advisory by nature;
+# they audit test quality rather than gate individual commits.
+#
+# Requires this section in pyproject.toml (mutmut is configured there, and a
+# mix-in must not overwrite files base owns):
+#
+#   [tool.mutmut]
+#   paths_to_mutate = ["src/"]
+#   tests_dir = ["tests/"]
+#
+# Note: mutmut is POSIX-only (it forks); run it on Linux, not Windows.
+name: mutation
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  mutmut:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --dev
+      - run: uv run mutmut run
+      - run: uv run mutmut results
+        if: always()
