@@ -44,7 +44,7 @@ copying.
 
 | Template             | What it gives you                                                        |
 | -------------------- | ------------------------------------------------------------------------ |
-| `base`               | src layout with a ports-and-adapters sample, the full poe gauntlet (ruff + bandit rules, pyright, import-linter, radon complexity ceiling, pytest + coverage floor), pip-audit task, AGENTS.md/CLAUDE.md/TABNINE.md contract, cross-platform pre-commit hook, GitHub Actions CI (Ubuntu + Windows), renovate.json |
+| `base`               | src layout with a ports-and-adapters sample, the full poe gauntlet (ruff + bandit rules, pyright, import-linter, radon complexity ceiling, pytest + coverage floor), pip-audit task, AGENTS.md/CLAUDE.md/TABNINE.md contract, `cosmic-python` architecture skill, cross-platform pre-commit hook, GitHub Actions CI (Ubuntu + Windows), renovate.json |
 | `testing-factories`  | factory_boy + faker test structure: `tests/factories.py` (sequences, Faker, subfactories, traits), shared conftest fixtures, and pattern-demonstrating tests |
 | `testing-property`   | Hypothesis property-based testing: demonstration properties (invariants, round-trips, idempotence) that run inside the existing test gate |
 | `testing-mutation`   | mutmut mutation testing as a weekly/manual GitHub Actions job — audits whether the tests would catch bugs, the complement to the coverage floor |
